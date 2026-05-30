@@ -1,5 +1,5 @@
 Code availability
-
+###########################################################################
 1. Raw sequence Quality check through FastQC and MultiQC
 module load fastqc/0.11.9
 fastqc -t 12 *.fastq.gz
@@ -8,6 +8,13 @@ module load multiqc/1.8
 multiqc *_fastqc.zip
 Variant discovery
 #!/bin/bash/
+Create outputs folders
+#^^^^^^^^^^^^^^^^^^^^^^^^^
+mkdir -p ${output1}${BREED}/{BAMs,MDBAMs,RECTABs,RECBAMs,GVCFs,metrices,TMP{1,2},LOGs}
+3. loading tools/modules
+module load bwa/0.7.17
+module load samtools/1.11
+module load java/8
 #2. define variables
 REF="/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa"
 BREED="ABERGELLE"
@@ -16,20 +23,107 @@ GATK="/home/apps/gatk/4.3.0.0/"
 t="12"
 TH="4"
 dbSNP="/home/tsigabu/V2_dbSNP/indexed/GCA_016772045.1_current_ids.vcf.gz"
-Create outputs folders
-#^^^^^^^^^^^^^^^^^^^^^^^^^
-mkdir -p ${output1}${BREED}/{BAMs,MDBAMs,RECTABs,RECBAMs,GVCFs,metrices,TMP{1,2},LOGs}
-3. loading tools/modules
-module load bwa/0.7.17
-module load samtools/1.11
-module load java/8
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-RGSM=(sample1 sample2) 
+RGSM=(ABETF0000003 
+ABETF0000005 
+ABETF0000007 
+ABETF0000008 
+ABETF0000009 
+ABETF0000012 
+ABETF0000013 
+ABETF0000014 
+ABETF0000015 
+ABETF0000016 
+ABETF0000020 
+ABETF0000021 
+ABETF0000023 
+ABETF0000026 
+ABETF0000033 
+ABETF0000034 
+ABETF0000035 
+ABETF0000036 
+ABETM0000006 
+ABETM0000037 
+BGETF0000002 
+BGETF0000003 
+BGETF0000004 
+BGETM0000005 
+BGETF0000006 
+BGETF0000007 
+BGETF0000008 
+BGETM0000010 
+BGETM0000012 
+BGETF0000013 
+BGETF0000014 
+BGETF0000015 
+BGETF0000016 
+BGETF0000018 
+BGETF0000019 
+BGETM0000020 
+BGETM0000021 
+BGETF00000022 
+BGETM0000023 
+BGETM0000024 
+BGETM0000025 
+BGETF0000026 
+BGETF0000027 
+ELETF0000001 
+ELETF0000002 
+ELETF0000003 
+ELETF0000004 
+ELETF0000005 
+ELETF0000006 
+ELETF0000007 
+ELETF0000008 
+ELETM0000009 
+ELETF0000011 
+ELETF0000012 
+ELETF0000013 
+ELETF0000014 
+ELETF0000016 
+ELETF0000017 
+ELETF0000018 
+ELETF0000019 
+ELETM0000020 
+ELETM0000021 
+ELETM0000022 
+MEETM0000018 
+MEETF0000022 
+MEETF0000023 
+MEETF0000024 
+MEETF0000025 
+MEETF0000026 
+MEETF0000027 
+MEETF0000031 
+MEETF0000033 
+MEETF0000035 
+MEETF0000036 
+MEETF0000037 
+MEETF0000041 
+MEETF0000042 
+MEETF0000045 
+NUETF0000001 
+NUETF0000011 
+NUETM0000002 
+NUETM0000046 
+NUETM0000048 
+NUETF0000049 
+NUETF0000050 
+NUETF0000051 
+NUETF0000052 
+NUETF0000053 
+NUETF0000056 
+NUETF0000057 
+NUETF0000059 
+NUETF0000060 
+NUETF0000061 
+NUETF0000062 
+NUETF0000066 
+NUETM0000070) 
 #############################################################################
-4. Mapping_script
+4. #Mapping_script
 bwa mem -t 12 -M -R '@RG\tID:\tSM:\tPL:ILLUMINA\tPU:\tLB:\tPI:' ${REF} ${INPUT}/R1_001.fastq.gz ${INPUT}/R2_001.fastq.gz | samtools view -bS - > ${output1}${BREED}/BAMs/sample1.pe.bam 
-
-BAM sorting
+#Sorting BAM file
 for i in ${!RGSM[@]}; do
 log=${output1}${BREED}/LOGs/${RGSM[i]}_SortSam.log
 	java -Xmx80G -jar ${GATK}gatk-package-4.3.0.0-local.jar SortSam \
@@ -41,7 +135,7 @@ log=${output1}${BREED}/LOGs/${RGSM[i]}_SortSam.log
           --tmp-dir ${output1}${BREED}/TMP1/ \
         2> >(tee -a ${log})
 
-5.Marking Duplicates
+5.#Marking Duplicates
 log=${output1}${BREED}/LOGs/${RGSM[i]}-MarkDuplicatesSpark
 java -Xmx80G -jar ${GATK}gatk-package-4.3.0.0-local.jar MarkDuplicatesSpark \
 		-I ${output1}${BREED}/BAMs/${RGSM[i]}.sorted.bam \
@@ -53,13 +147,13 @@ java -Xmx80G -jar ${GATK}gatk-package-4.3.0.0-local.jar MarkDuplicatesSpark \
                                    --remove-all-duplicates true \
 		--tmp-dir ${output1}${BREED}/TMP1/ \
 	 2> >(tee -a ${log})
-6. Estimate Library Complexity
+6. #Estimate Library Complexity
 java -Xmx80G -jar ${GATK}gatk-package-4.3.0.0-local.jar EstimateLibraryComplexity \
 	-I ${output1}${BREED}/MDBAMs/${RGSM[i]}-dedup.bam \
 	-O ${output1}${BREED}/metrices/${RGSM[i]}-dedup-metrices.txt \
 	--TMP_DIR ${output1}${BREED}/TMP2/ \
   2> >(tee -a ${log})
-7.Base quality score recalibration (BQSR)
+7.#Base quality score recalibration (BQSR)
 java -Xmx80G -jar ${GATK}/gatk-package-4.3.0.0-local.jar BaseRecalibratorSpark \
                 -I ${output1}${BREED}/MDBAMs/${RGSM[i]}-dedup.bam \
                 -R ${REF} \
@@ -68,7 +162,7 @@ java -Xmx80G -jar ${GATK}/gatk-package-4.3.0.0-local.jar BaseRecalibratorSpark \
               --spark-master local[${TH}] \
                 --tmp-dir ${output1}${BREED}/TMP1/ \
         2> >(tee -a ${log})
-8. Apply BQSR
+8. #Apply BQSR
  java -Xmx80G -jar ${GATK}/gatk-package-4.3.0.0-local.jar ApplyBQSRSpark \
                 -I ${output1}${BREED}/MDBAMs/${RGSM[i]}-dedup.bam  \
                -R ${REF} \
@@ -78,7 +172,7 @@ java -Xmx80G -jar ${GATK}/gatk-package-4.3.0.0-local.jar BaseRecalibratorSpark \
                --spark-master local[${TH}] \
                --tmp-dir ${output1}${BREED}/TMP2/ \
                 2> >(tee -a ${log})
-9.Base Recalibration
+9.#Base Recalibration
  log=${output1}${BREED}/LOGs/${RGSM[i]} -BQSR.log
         java -Xmx80G -jar ${GATK}/gatk-package-4.3.0.0-local.jar BaseRecalibratorSpark \
                 -I ${output1}${BREED}/RECBAMs/${RGSM[i]}-dedup.recal.bam \
@@ -88,7 +182,7 @@ java -Xmx80G -jar ${GATK}/gatk-package-4.3.0.0-local.jar BaseRecalibratorSpark \
               --spark-master local[${TH}] \
               --tmp-dir ${output1}${BREED}/TMP1/ \
         2> >(tee -a ${log})
-10. Variant (SNP)call
+10. #Variant (SNP)call
      java -Xmx80G -jar ${GATK}gatk-package-4.3.0.0-local.jar HaplotypeCaller \
                 -R ${REF} \
                 -I ${output1}${BREED}/RECBAMs/${RGSM[i]}-dedup.recal.bam \
@@ -98,12 +192,110 @@ java -Xmx80G -jar ${GATK}/gatk-package-4.3.0.0-local.jar BaseRecalibratorSpark \
                 --dbsnp ${dbSNP} \
                 -G StandardAnnotation 
                 -G AS_StandardAnnotation
-11.Combine GVCFs 
+11.#Combine GVCFs 
 #!/bin/bash/
-gatk CombineGVCFs -R /home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa 
---dbsnp “/home/tgebreselassie/V2_dbSNP/indexed/GCA_016772045.1_current_ids.vcf.gz” --variant ABETF0000003.g.vcf.gz --variant ABETF0000005.g.vcf.gz --variant ABETF0000007.g.vcf.gz --variant ABETF0000008.g.vcf.gz --variant ABETF0000009.g.vcf.gz --variant ABETF0000012.g.vcf.gz --variant ABETF0000013.g.vcf.gz --variant ABETF0000014.g.vcf.gz --variant ABETF0000015.g.vcf.gz --variant ABETF0000016.g.vcf.gz --variant ABETF0000020.g.vcf.gz --variant ABETF0000021.g.vcf.gz --variant ABETF0000023.g.vcf.gz --variant ABETF0000026.g.vcf.gz --variant ABETF0000033.g.vcf.gz --variant ABETF0000034.g.vcf.gz --variant ABETF0000035.g.vcf.gz --variant ABETF0000036.g.vcf.gz --variant ABETM0000006.g.vcf.gz --variant ABETM0000037.g.vcf.gz --variant BGETF0000002.g.vcf.gz --variant BGETF0000003.g.vcf.gz --variant BGETF0000004.g.vcf.gz --variant BGETM0000005.g.vcf.gz --variant BGETF0000006.g.vcf.gz --variant BGETF0000007.g.vcf.gz --variant BGETF0000008.g.vcf.gz --variant BGETM0000010.g.vcf.gz --variant BGETM0000012.g.vcf.gz --variant BGETF0000013.g.vcf.gz --variant BGETF0000014.g.vcf.gz --variant BGETF0000015.g.vcf.gz --variant BGETF0000016.g.vcf.gz --variant BGETF0000018.g.vcf.gz --variant BGETF0000019.g.vcf.gz --variant BGETM0000020.g.vcf.gz --variant BGETM0000021.g.vcf.gz --variant BGETF00000022.g.vcf.gz --variant BGETM0000023.g.vcf.gz --variant BGETM0000024.g.vcf.gz --variant BGETM0000025.g.vcf.gz --variant BGETF0000026.g.vcf.gz --variant BGETF0000027.g.vcf.gz --variant ELETF0000001.g.vcf.gz --variant ELETF0000002.g.vcf.gz --variant ELETF0000003.g.vcf.gz --variant ELETF0000004.g.vcf.gz --variant ELETF0000005.g.vcf.gz --variant ELETF0000006.g.vcf.gz --variant ELETF0000007.g.vcf.gz --variant ELETF0000008.g.vcf.gz --variant ELETM0000009.g.vcf.gz --variant ELETF0000011.g.vcf.gz --variant ELETF0000012.g.vcf.gz --variant ELETF0000013.g.vcf.gz --variant ELETF0000014.g.vcf.gz --variant ELETF0000016.g.vcf.gz --variant ELETF0000017.g.vcf.gz --variant ELETF0000018.g.vcf.gz --variant ELETF0000019.g.vcf.gz --variant ELETM0000020.g.vcf.gz --variant ELETM0000021.g.vcf.gz --variant ELETM0000022.g.vcf.gz --variant MEETM0000018.g.vcf.gz --variant MEETF0000022.g.vcf.gz --variant MEETF0000023.g.vcf.gz --variant MEETF0000024.g.vcf.gz --variant MEETF0000025.g.vcf.gz --variant MEETF0000026.g.vcf.gz --variant MEETF0000027.g.vcf.gz --variant MEETF0000031.g.vcf.gz --variant MEETF0000033.g.vcf.gz --variant MEETF0000035.g.vcf.gz --variant MEETF0000036.g.vcf.gz --variant MEETF0000037.g.vcf.gz --variant MEETF0000041.g.vcf.gz --variant MEETF0000042.g.vcf.gz --variant MEETF0000045.g.vcf.gz --variant NUETF0000001.g.vcf.gz --variant NUETF0000011.g.vcf.gz --variant NUETM0000002.g.vcf.gz --variant NUETM0000046.g.vcf.gz --variant NUETM0000048.g.vcf.gz --variant NUETF0000049.g.vcf.gz --variant NUETF0000050.g.vcf.gz --variant NUETF0000051.g.vcf.gz --variant NUETF0000052.g.vcf.gz --variant NUETF0000053.g.vcf.gz --variant NUETF0000056.g.vcf.gz --variant NUETF0000057.g.vcf.gz --variant NUETF0000059.g.vcf.gz --variant NUETF0000060.g.vcf.gz --variant NUETF0000062.g.vcf.gz --variant NUETF0000061.g.vcf.gz --variant NUETF0000066.g.vcf.gz --variant NUETM0000070.g.vcf.gz --variant AM31.g.vcf.gz --variant AM32.g.vcf.gz --variant AM42.g.vcf.gz --output 96_samples.g.vcf.gz
+gatk CombineGVCFs \
+-R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa"
+--dbsnp “/home/tgebreselassie/V2_dbSNP/indexed/GCA_016772045.1_current_ids.vcf.gz” 
+--variant ABETF0000003.g.vcf.gz 
+--variant ABETF0000005.g.vcf.gz 
+--variant ABETF0000007.g.vcf.gz 
+--variant ABETF0000008.g.vcf.gz 
+--variant ABETF0000009.g.vcf.gz 
+--variant ABETF0000012.g.vcf.gz 
+--variant ABETF0000013.g.vcf.gz 
+--variant ABETF0000014.g.vcf.gz 
+--variant ABETF0000015.g.vcf.gz 
+--variant ABETF0000016.g.vcf.gz 
+--variant ABETF0000020.g.vcf.gz 
+--variant ABETF0000021.g.vcf.gz 
+--variant ABETF0000023.g.vcf.gz 
+--variant ABETF0000026.g.vcf.gz 
+--variant ABETF0000033.g.vcf.gz 
+--variant ABETF0000034.g.vcf.gz 
+--variant ABETF0000035.g.vcf.gz 
+--variant ABETF0000036.g.vcf.gz 
+--variant ABETM0000006.g.vcf.gz 
+--variant ABETM0000037.g.vcf.gz 
+--variant BGETF0000002.g.vcf.gz 
+--variant BGETF0000003.g.vcf.gz 
+--variant BGETF0000004.g.vcf.gz 
+--variant BGETM0000005.g.vcf.gz 
+--variant BGETF0000006.g.vcf.gz 
+--variant BGETF0000007.g.vcf.gz 
+--variant BGETF0000008.g.vcf.gz 
+--variant BGETM0000010.g.vcf.gz 
+--variant BGETM0000012.g.vcf.gz 
+--variant BGETF0000013.g.vcf.gz 
+--variant BGETF0000014.g.vcf.gz 
+--variant BGETF0000015.g.vcf.gz 
+--variant BGETF0000016.g.vcf.gz 
+--variant BGETF0000018.g.vcf.gz 
+--variant BGETF0000019.g.vcf.gz 
+--variant BGETM0000020.g.vcf.gz 
+--variant BGETM0000021.g.vcf.gz 
+--variant BGETF0000022.g.vcf.gz 
+--variant BGETM0000023.g.vcf.gz 
+--variant BGETM0000024.g.vcf.gz 
+--variant BGETM0000025.g.vcf.gz 
+--variant BGETF0000026.g.vcf.gz 
+--variant BGETF0000027.g.vcf.gz 
+--variant ELETF0000001.g.vcf.gz 
+--variant ELETF0000002.g.vcf.gz 
+--variant ELETF0000003.g.vcf.gz 
+--variant ELETF0000004.g.vcf.gz 
+--variant ELETF0000005.g.vcf.gz 
+--variant ELETF0000006.g.vcf.gz 
+--variant ELETF0000007.g.vcf.gz 
+--variant ELETF0000008.g.vcf.gz 
+--variant ELETM0000009.g.vcf.gz 
+--variant ELETF0000011.g.vcf.gz 
+--variant ELETF0000012.g.vcf.gz 
+--variant ELETF0000013.g.vcf.gz 
+--variant ELETF0000014.g.vcf.gz 
+--variant ELETF0000016.g.vcf.gz 
+--variant ELETF0000017.g.vcf.gz 
+--variant ELETF0000018.g.vcf.gz 
+--variant ELETF0000019.g.vcf.gz 
+--variant ELETM0000020.g.vcf.gz 
+--variant ELETM0000021.g.vcf.gz 
+--variant ELETM0000022.g.vcf.gz 
+--variant MEETM0000018.g.vcf.gz 
+--variant MEETF0000022.g.vcf.gz 
+--variant MEETF0000023.g.vcf.gz 
+--variant MEETF0000024.g.vcf.gz 
+--variant MEETF0000025.g.vcf.gz 
+--variant MEETF0000026.g.vcf.gz 
+--variant MEETF0000027.g.vcf.gz 
+--variant MEETF0000031.g.vcf.gz 
+--variant MEETF0000033.g.vcf.gz 
+--variant MEETF0000035.g.vcf.gz 
+--variant MEETF0000036.g.vcf.gz 
+--variant MEETF0000037.g.vcf.gz 
+--variant MEETF0000041.g.vcf.gz 
+--variant MEETF0000042.g.vcf.gz 
+--variant MEETF0000045.g.vcf.gz 
+--variant NUETF0000001.g.vcf.gz 
+--variant NUETF0000011.g.vcf.gz 
+--variant NUETM0000002.g.vcf.gz 
+--variant NUETM0000046.g.vcf.gz 
+--variant NUETM0000048.g.vcf.gz 
+--variant NUETF0000049.g.vcf.gz 
+--variant NUETF0000050.g.vcf.gz 
+--variant NUETF0000051.g.vcf.gz 
+--variant NUETF0000052.g.vcf.gz 
+--variant NUETF0000053.g.vcf.gz 
+--variant NUETF0000056.g.vcf.gz 
+--variant NUETF0000057.g.vcf.gz 
+--variant NUETF0000059.g.vcf.gz 
+--variant NUETF0000060.g.vcf.gz 
+--variant NUETF0000062.g.vcf.gz 
+--variant NUETF0000061.g.vcf.gz 
+--variant NUETF0000066.g.vcf.gz 
+--variant NUETM0000070.g.vcf.gz 
+--output 96_samples.g.vcf.gz
 
-12.Joint genotyping
+12.#Joint genotyping
 #!bash
 module load gatk/4.3.0.0 
 gatk GenotypeGVCFs \
@@ -111,8 +303,7 @@ gatk GenotypeGVCFs \
 --dbsnp /home/tgebreselassie/V2_dbSNP/indexed/GCA_016772045.1_current_ids.vcf.gz  
 -V /home/tgebreselassie/output1/ABERGELLE/GVCFs/Final.Final2.119.g.vcf.gz  
 -O /home/tgebreselassie/output1/ABERGELLE/VCF/96_samples.vcf.gz
-
-13.VQSR (Variant Quality Score Recalibration)
+13.#VQSR (Variant Quality Score Recalibration)
 VQSR for SNP
 Gatk VariantRecalibrator \
 -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa"  \
@@ -134,8 +325,7 @@ Gatk VariantRecalibrator \
 -O 96_samples.SNP.recal \
 --tranches-file Samples.SNP.tranches \
 --rscript-file Samples_recal.plot.R\
-
-14.VQSR
+14.#VQSR
  Apply VQSR for SNP
  gatk ApplyVQSR \ 
 -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa"  \
@@ -145,10 +335,9 @@ Gatk VariantRecalibrator \
 --tranches-file Samples_recal.SNP.tranches \
 --recal-file Samples_recal.SNP.recal  \
 -O 96_samples.vcf.gz\
-
-VQSR for INDELs
+#VQSR for INDELs
 gatk VariantRecalibrator 
--R  "/home/REF/Reference.fa" \
+-R "/home/REF/Reference.fa" \
 -V 96_samples.vcf.gz \
 --trust-all-polymorphic -tranche 100.0 \
 -tranche 99.95 -tranche 99.9 \
@@ -169,7 +358,6 @@ gatk VariantRecalibrator
 -resource:dbsnp,known=true,training=false,truth=false,prior=7 "/home/tgebreselassie/119_Omega/ovis_aries_rambouillet.vcf.gz" \
 -O cohort_INDELs.recal 
 --tranches-file cohort_INDELs.tranches 
-
 Apply VQSR for SNP
  gatk ApplyVQSR \ 
 -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa"  \
@@ -180,50 +368,101 @@ Apply VQSR for SNP
 --recal-file Samples_recal.INDEL.recal  \
 -O 96_samples.INDELs.VQSR.vcf.gz \
 
-15. Selecting only biallelic and autosomal SNPs
+15.#Selecting only biallelic and autosomal SNPs
 gatk SelectVariants \
  -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa"  \
  -V Sample.SNP.VQSR.vcf.gz --select-type-to-include SNP -O 96_samples.biallelic.vcf.gz --restrict-alleles-to BIALLELIC
-
-16. Selecting autosomal SNPs
+16.#Selecting autosomal SNPs
 gatk SelectVariants  
 -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa"  \
 -V 96_samples.biallelic.vcf.gz --intervals 1 --intervals 2 --intervals 3 --intervals 4 --intervals 5 --intervals 6 --intervals 7 --intervals 8 --intervals 9 --intervals 10 --intervals 11 --intervals 12 --intervals 13 --intervals 14 --intervals 15 --intervals 16 --intervals 17 --intervals 18 --intervals 19 --intervals 20 --intervals 21 --intervals 22 --intervals 23 --intervals 24 --intervals 25 --intervals 26 -O 96_samples.vcf.gz
 
-17. Variants density plot
+17.#Variants density plot across autosomal chromosomes (Chr1-26)
 module load R/4.2
  library(vcfR)
 library(CMplot)
 library(Cairo)
-# Read VCF
+
+# =========================
+# 1. READ VCF
+# =========================
 vcf <- read.vcfR("96_samples.vcf.gz")
-# Prepare CMplot input
-CMsnp <- data.frame(
+
+dat <- data.frame(
   SNP = paste0("SNP_", 1:length(getPOS(vcf))),
   Chromosome = as.character(getCHROM(vcf)),
-  Position = getPOS(vcf)
+  Position = getPOS(vcf),
+  P = runif(length(getPOS(vcf)), 0, 1)   # required for CMplot framework
 )
-# Band range: 5 to 8
-band_values <- 5:8
-# Loop through bands
-for (b in band_values) {
 
-  CairoPNG(
-    filename = paste0("SNP_density_band_", b, ".png"),
-    width = 5000,
-    height = 1600,
-    res = 300
-  )
+# =========================
+# 2. ORDER CHROMOSOMES
+# =========================
+dat$Chromosome <- factor(dat$Chromosome, levels = as.character(1:26))
+dat <- dat[order(dat$Chromosome, dat$Position), ]
 
-  CMplot(
-    CMsnp,
-    plot.type = "d",
-    bin.size = 1000000,   # 1 Mb windows
-    col = c("darkgreen", "yellow", "red"),
-    band = b,
-    file.output = FALSE,
-    verbose = FALSE
-  )
+# =========================
+# 3. SUBSAMPLE (CRITICAL for 39M SNPs)
+# =========================
+set.seed(123)
+dat_small <- dat[sample(nrow(dat), 2000000), ]  # 2M SNPs for plotting
 
-  dev.off()
-}
+# =========================================================
+# A. LINEAR MANHATTAN (PUBLICATION MAIN FIGURE)
+# =========================================================
+CairoPNG("Fig1_Manhattan_linear.png", width = 8000, height = 3000, res = 300)
+
+CMplot(
+  dat_small,
+  plot.type = "m",
+  col = c("darkgreen", "goldenrod"),
+  bin.size = 1e6,
+  file.output = FALSE,
+  verbose = TRUE
+)
+
+dev.off()
+
+# =========================================================
+# B. CIRCULAR MANHATTAN + DENSITY 
+# =========================================================
+CairoPNG("Fig2_Manhattan_circular.png", width = 7000, height = 7000, res = 400)
+
+CMplot(
+  dat_small,
+  plot.type = "c",
+  type = "p",
+
+  bin.size = 1e6,
+  r = 0.4,
+
+  chr.labels = paste0("Chr", 1:26),
+
+  chr.den.col = c("darkgreen", "yellow", "red"),
+
+  cir.axis = TRUE,
+  cir.axis.col = "black",
+  cir.chr.h = 1.3,
+  outward = FALSE,
+
+  file.output = FALSE,
+  verbose = TRUE
+)
+
+dev.off()
+
+# =========================================================
+# C. SNP DENSITY PLOT (GENOME VIEW)
+# =========================================================
+CairoPNG("Fig3_SNP_density.png", width = 7000, height = 1800, res = 300)
+
+CMplot(
+  dat,
+  plot.type = "d",
+  bin.size = 1e6,
+  col = c("darkgreen", "yellow", "red"),
+  file.output = FALSE,
+  verbose = TRUE
+)
+
+dev.off()
