@@ -200,7 +200,7 @@ gatk CombineGVCFs -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa" --db
 12.#Joint genotyping
 #!bash
 module load gatk/4.3.0.0 
-gatk GenotypeGVCFs -R  "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa" --dbsnp /home/tgebreselassie/V2_dbSNP/indexed/GCA_016772045.1_current_ids.vcf.gz -V /home/tgebreselassie/output1/ABERGELLE/GVCFs/Final.Final2.119.g.vcf.gz -O /home/tgebreselassie/output1/ABERGELLE/VCF/96_samples.vcf.gz
+gatk GenotypeGVCFs -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa" --dbsnp /home/tgebreselassie/V2_dbSNP/indexed/GCA_016772045.1_current_ids.vcf.gz -V /home/tgebreselassie/output1/ABERGELLE/GVCFs/Final.Final2.119.g.vcf.gz -O /home/tgebreselassie/output1/ABERGELLE/VCF/96_samples.vcf.gz
 13.#VQSR (Variant Quality Score Recalibration)
 VQSR for SNP
 Gatk VariantRecalibrator -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa" -V 96_samples.vcf.gz -resource:ensembl,known=false,training=true,truth=true,prior=15 "/home/tgebreselassie/V2_dbSNP/indexed/GCA_016772045.1_current_ids.vcf.gz" -resource:dbsnp,known=true,training=false,truth=false,prior=7 "/home/tgebreselassie/119_Omega/ovis_aries_rambouillet.vcf.gz" -mode SNP -tranche 100.0 -tranche 99.9 -tranche 99.0 -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP -tranche 90.0 -O 96_samples.SNP.recal --tranches-file Samples.SNP.tranches --rscript-file Samples_recal.plot.R
@@ -208,9 +208,8 @@ Gatk VariantRecalibrator -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.f
  Apply VQSR for SNP
  gatk ApplyVQSR -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa" -V 96_samples.SNP.recal --truth-sensitivity-filter-level 99.0 -mode SNP --tranches-file Samples_recal.SNP.tranches --recal-file Samples_recal.SNP.recal -O 96_samples.vcf.gz
 #VQSR for INDELs
-gatk VariantRecalibrator 
--R "/home/REF/Reference.fa" -V 96_samples.vcf.gz --trust-all-polymorphic -tranche 100.0 -tranche 99.95 -tranche 99.9 -tranche 99.8 -tranche 99.6 -tranche 99.5 -tranche 99.4 -tranche 99.3 -tranche 99.0 tranche 98.0 -tranche 97.0 -tranche 90.0 -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP --max-gaussians 4 -mode INDEL -resource:ensembl,known=false,training=true,truth=true,prior=15 "/home/tgebreselassie/V2_dbSNP/indexed/GCA_016772045.1_current_ids.vcf.gz" -resource:dbsnp,known=true,training=false,truth=false,prior=7 "/home/tgebreselassie/119_Omega/ovis_aries_rambouillet.vcf.gz" -O cohort_INDELs.recal --tranches-file cohort_INDELs.tranches 
-Apply VQSR for SNP
+gatk VariantRecalibrator -R "/home/REF/Reference.fa" -V 96_samples.vcf.gz --trust-all-polymorphic -tranche 100.0 -tranche 99.95 -tranche 99.9 -tranche 99.8 -tranche 99.6 -tranche 99.5 -tranche 99.4 -tranche 99.3 -tranche 99.0 tranche 98.0 -tranche 97.0 -tranche 90.0 -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ -an SOR -an DP --max-gaussians 4 -mode INDEL -resource:ensembl,known=false,training=true,truth=true,prior=15 "/home/tgebreselassie/V2_dbSNP/indexed/GCA_016772045.1_current_ids.vcf.gz" -resource:dbsnp,known=true,training=false,truth=false,prior=7 "/home/tgebreselassie/119_Omega/ovis_aries_rambouillet.vcf.gz" -O cohort_INDELs.recal --tranches-file cohort_INDELs.tranches 
+#Apply VQSR for INDELs
  gatk ApplyVQSR -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa" -V cohort_INDELs.tranches --truth-sensitivity-filter-level 99.0 -mode INDEL --tranches-file Samples_recal.INDEL.tranches --recal-file Samples_recal.INDEL.recal -O 96_samples.INDELs.VQSR.vcf.gz
 
 15.#Selecting only biallelic and autosomal SNPs
