@@ -377,7 +377,60 @@ gatk SelectVariants
 -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa"  \
 -V 96_samples.biallelic.vcf.gz --intervals 1 --intervals 2 --intervals 3 --intervals 4 --intervals 5 --intervals 6 --intervals 7 --intervals 8 --intervals 9 --intervals 10 --intervals 11 --intervals 12 --intervals 13 --intervals 14 --intervals 15 --intervals 16 --intervals 17 --intervals 18 --intervals 19 --intervals 20 --intervals 21 --intervals 22 --intervals 23 --intervals 24 --intervals 25 --intervals 26 -O 96_samples.vcf.gz
 
-17.#Variants density plot across autosomal chromosomes (Chr1-26)
+17.# BAM file summary statistics plots 
+# Load libraries
+module load R/4.2
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+
+# Read Excel file
+df <- read_excel("C:/Users/Tsigabu/Desktop/2026_analysis/Scientific_data/BAM_stat.xlsx")
+
+# Set strict alphabetical breed order
+df$Breed <- factor(df$Breed,
+                   levels = sort(unique(df$Breed)))
+
+# Define breed colors
+breed_colors <- c("Abergelle" = "green",
+                  "Begait" = "red",
+                  "Elle" = "cyan",
+                  "Majang" = "blue",
+                  "Nuer" = "yellow",
+                  "Simien" = "purple")
+
+# Function to plot a metric
+plot_metric <- function(metric) {
+  ggplot(df, aes(x = Breed, y = .data[[metric]], fill = Breed)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_jitter(color = "black", width = 0.2, size = 1.5) +
+    scale_fill_manual(values = breed_colors) +
+    theme_bw(base_size = 18) +  # larger font for clarity
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          legend.position = "none",
+          plot.title = element_blank()) +
+    labs(y = metric, x = "Breed")
+}
+
+# Generate plots
+plot_a <- plot_metric("Depth of coverage")
+plot_b <- plot_metric("MeanCoverage")
+plot_c <- plot_metric("MeanBaseQ")
+plot_d <- plot_metric("MeanMAPQ")
+
+# Combine into a single figure with external labels
+combined_plot <- (plot_a | plot_b) / (plot_c | plot_d) +
+  plot_annotation(tag_levels = "a")
+
+# Save high-resolution outputs
+ggsave("C:/Users/Tsigabu/Desktop/2026_analysis/Scientific_data/BAM_stat_boxplots.pdf",
+       combined_plot, width = 14, height = 12)   
+
+ggsave("C:/Users/Tsigabu/Desktop/2026_analysis/Scientific_data/BAM_stat_boxplots.tiff",
+       combined_plot, width = 14, height = 12, dpi = 600, compression = "lzw") 
+
+18.#Variants density plot across autosomal chromosomes (Chr1-26)
 module load R/4.2
  library(vcfR)
 library(CMplot)
