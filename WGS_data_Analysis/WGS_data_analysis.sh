@@ -214,8 +214,7 @@ Apply VQSR for SNP
  gatk ApplyVQSR -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa" -V cohort_INDELs.tranches --truth-sensitivity-filter-level 99.0 -mode INDEL --tranches-file Samples_recal.INDEL.tranches --recal-file Samples_recal.INDEL.recal -O 96_samples.INDELs.VQSR.vcf.gz
 
 15.#Selecting only biallelic and autosomal SNPs
-gatk SelectVariants \
- -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa" -V Sample.SNP.VQSR.vcf.gz --select-type-to-include SNP -O 96_samples.biallelic.vcf.gz --restrict-alleles-to BIALLELIC
+gatk SelectVariants -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa" -V Sample.SNP.VQSR.vcf.gz --select-type-to-include SNP -O 96_samples.biallelic.vcf.gz --restrict-alleles-to BIALLELIC
 16.#Selecting autosomal SNPs
 gatk SelectVariants -R "/home/tgebreselassie/REF/ARS-UI_Ramb_v2.0_genomic.fa" -V 96_samples.biallelic.vcf.gz --intervals 1 --intervals 2 --intervals 3 --intervals 4 --intervals 5 --intervals 6 --intervals 7 --intervals 8 --intervals 9 --intervals 10 --intervals 11 --intervals 12 --intervals 13 --intervals 14 --intervals 15 --intervals 16 --intervals 17 --intervals 18 --intervals 19 --intervals 20 --intervals 21 --intervals 22 --intervals 23 --intervals 24 --intervals 25 --intervals 26 -O 96_samples.vcf.gz
 
