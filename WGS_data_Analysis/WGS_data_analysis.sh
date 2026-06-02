@@ -3,12 +3,12 @@ Code availability
 1. Raw sequence Quality check through FastQC and MultiQC
 module load fastqc/0.11.9
 fastqc -t 12 *.fastq.gz
-2.MultiQC (summary of the fastqc results)
+2.MultiQC (summary of the FastQC results)
 module load multiqc/1.8
 multiqc *_fastqc.zip
 Variant discovery
 #!/bin/bash/
-Create outputs folders
+Create output folders
 #^^^^^^^^^^^^^^^^^^^^^^^^^
 mkdir -p ${output1}${BREED}/{BAMs,MDBAMs,RECTABs,RECBAMs,GVCFs,metrices,TMP{1,2},LOGs}
 3. loading tools/modules
@@ -145,7 +145,7 @@ java -Xmx80G -jar ${GATK}gatk-package-4.3.0.0-local.jar MarkDuplicatesSpark \
  		--optical-duplicate-pixel-distance 2500 \
  		--read-validation-stringency LENIENT \
 		--create-output-bam-index true \
-                                   --remove-all-duplicates true \
+        --remove-all-duplicates true \
 		--tmp-dir ${output1}${BREED}/TMP1/ \
 	 2> >(tee -a ${log})
 6. #Estimate Library Complexity
